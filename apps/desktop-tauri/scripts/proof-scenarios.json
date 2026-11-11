@@ -270,6 +270,25 @@
       ]
     },
     {
+      "name": "settings-session-reset-warning",
+      "query": "window=settings&tab=notifications&theme=dark",
+      "size": [880, 620],
+      "steps": [
+        { "expectSelector": "input[aria-label=\"Notify before session reset\"]:checked" },
+        { "expectText": ["30 min", "ntfy topic", "Test desktop toast"] },
+        { "click": { "selector": "button", "label": "Test desktop toast" } },
+        { "expectCall": { "cmd": "test_session_reset_warning", "args": { "topic": null } } },
+        { "expectText": "Desktop toast requested." },
+        { "type": { "selector": "input", "label": "ntfy topic", "text": "claude-proof-topic" } },
+        { "click": { "selector": "button", "label": "Save" } },
+        { "expectCall": { "cmd": "update_settings", "args": { "patch": { "sessionResetWarningNtfyTopic": "claude-proof-topic" } } } },
+        { "click": { "selector": "button", "label": "Send test" } },
+        { "expectCall": { "cmd": "test_session_reset_warning", "args": { "topic": "claude-proof-topic" } } },
+        { "expectText": "Test sent to ntfy.sh." },
+        { "screenshot": "settings-session-reset-warning" }
+      ]
+    },
+    {
       "name": "settings-general-light",
       "query": "window=settings&tab=general&theme=light",
       "size": [880, 620],

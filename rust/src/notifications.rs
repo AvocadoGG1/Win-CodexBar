@@ -12,6 +12,11 @@ use chrono::{DateTime, Utc};
 mod credential;
 mod identity_gaps;
 mod limit_reset;
+mod reset_warning;
+pub use reset_warning::{
+    DEFAULT_SESSION_RESET_WARNING_LEAD_MINUTES, SessionResetWarning, send_reset_warning_ntfy,
+    session_reset_warning_lead_minutes, validate_reset_warning_topic,
+};
 
 pub use credential::CredentialAlertPolicy;
 use credential::CredentialEpisodes;

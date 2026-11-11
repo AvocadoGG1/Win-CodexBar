@@ -13,6 +13,7 @@ mod http_server;
 mod powertoys;
 mod proof_harness;
 mod proof_tray_menu;
+mod reset_warning;
 mod shell;
 mod shortcut_bridge;
 mod state;
@@ -208,6 +209,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(Mutex::new(initial_state))
+        .manage(Mutex::new(reset_warning::ResetWarningService::load()))
         .manage(commands::CurrencyRateCache::default())
         .manage(http_server_controller.clone())
         .plugin(shortcut_bridge::plugin())
@@ -345,6 +347,7 @@ fn main() {
             commands::get_system_accent_color,
             commands::get_system_theme,
             commands::play_notification_sound,
+            reset_warning::test_session_reset_warning,
             commands::open_external_url,
             commands::reanchor_tray_panel,
             commands::quit_app,

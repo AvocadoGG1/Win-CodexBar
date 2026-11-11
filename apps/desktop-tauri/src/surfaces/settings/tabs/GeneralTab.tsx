@@ -30,6 +30,7 @@ import type { LocaleKey } from "../../../i18n/keys";
 import { CURRENCY_PICKER_OPTIONS } from "../../../lib/currency";
 import type { TabProps } from "../settingsTabs";
 import PreferencesTransferSection from "./PreferencesTransferSection";
+import ResetWarningSettings from "./ResetWarningSettings";
 import SwitcherShortcutsDialog from "../SwitcherShortcutsDialog";
 
 /** Select value for Language "System" (follow the Windows display language). */
@@ -590,6 +591,10 @@ function NotificationsPane({
             onChange={(v) => set({ limitResetNotificationsEnabled: v })}
           />
         </Field>
+      </SettingsGroup>
+
+      <SettingsGroup>
+        <ResetWarningSettings settings={settings} set={set} saving={saving} />
       </SettingsGroup>
 
       {/* The thresholds stay visible while threshold warnings are off: they also set

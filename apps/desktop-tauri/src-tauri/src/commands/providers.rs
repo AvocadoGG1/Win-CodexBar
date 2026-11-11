@@ -484,6 +484,7 @@ async fn refresh_provider(
     }
 
     if let Some(snapshot) = published {
+        crate::reset_warning::provider_refreshed(&app, id);
         events::emit_provider_updated(&app, &snapshot);
         if fresh_snapshot {
             dispatch_usage_updated_hook(

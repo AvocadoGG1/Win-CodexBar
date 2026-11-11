@@ -271,6 +271,9 @@ pub struct Settings {
     /// Announce when a session or weekly limit resets (opt-in).
     #[serde(default)]
     pub limit_reset_notifications_enabled: bool,
+    pub session_reset_warning_enabled: bool,
+    pub session_reset_warning_lead_minutes: u32,
+    pub session_reset_warning_ntfy_topic: String,
 
     /// Notify once per failure episode when a provider account needs sign-in again.
     #[serde(default)]
@@ -872,6 +875,10 @@ impl Default for Settings {
             predictive_pace_warning_enabled: false,
             predictive_pace_warning_lead_hours: 0,
             limit_reset_notifications_enabled: false,
+            session_reset_warning_enabled: true,
+            session_reset_warning_lead_minutes:
+                crate::notifications::DEFAULT_SESSION_RESET_WARNING_LEAD_MINUTES,
+            session_reset_warning_ntfy_topic: String::new(),
             credential_expiry_notifications_enabled: false,
             session_quota_notifications_enabled: true,
             show_pace: true,

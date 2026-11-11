@@ -95,6 +95,7 @@ export const INERT_ACTIONS = [
   "set_provider_region",
   "set_provider_usage_source",
   "set_vercel_access_token",
+  "test_session_reset_warning",
   "trigger_provider_login",
   "unregister_global_shortcut",
   "write_usage_spend_export",

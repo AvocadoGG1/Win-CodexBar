@@ -668,6 +668,10 @@ export function playNotificationSound(event: NotificationSoundEvent): Promise<vo
   return invoke<void>("play_notification_sound", { event });
 }
 
+export function testSessionResetWarning(topic?: string): Promise<void> {
+  return invoke<void>("test_session_reset_warning", { topic: topic ?? null });
+}
+
 export function reanchorTrayPanel(): Promise<void> {
   return invoke<void>("reanchor_tray_panel");
 }

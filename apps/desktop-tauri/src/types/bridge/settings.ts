@@ -244,6 +244,9 @@ export interface SettingsSnapshot {
   predictivePaceWarningLeadHours: number;
   /** Absent on older shells; the UI treats that as off. */
   limitResetNotificationsEnabled?: boolean;
+  sessionResetWarningEnabled?: boolean;
+  sessionResetWarningLeadMinutes?: number;
+  sessionResetWarningNtfyTopic?: string;
   credentialExpiryNotificationsEnabled: boolean;
   /** Absent on older shells; the UI falls back to `showNotifications`. */
   sessionQuotaNotificationsEnabled?: boolean;
@@ -438,6 +441,9 @@ export interface SettingsUpdate {
   predictivePaceWarningEnabled?: boolean;
   predictivePaceWarningLeadHours?: number;
   limitResetNotificationsEnabled?: boolean;
+  sessionResetWarningEnabled?: boolean;
+  sessionResetWarningLeadMinutes?: number;
+  sessionResetWarningNtfyTopic?: string;
   credentialExpiryNotificationsEnabled?: boolean;
   sessionQuotaNotificationsEnabled?: boolean;
   showPace?: boolean;

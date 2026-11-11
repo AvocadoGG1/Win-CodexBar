@@ -214,6 +214,9 @@ pub(super) struct RawSettings {
     #[serde(default)]
     predictive_pace_warning_lead_hours: u16,
     limit_reset_notifications_enabled: bool,
+    session_reset_warning_enabled: bool,
+    session_reset_warning_lead_minutes: u32,
+    session_reset_warning_ntfy_topic: String,
     credential_expiry_notifications_enabled: bool,
     /// `None` when the file predates the key; it then inherits `show_notifications`.
     #[serde(default)]
@@ -439,6 +442,9 @@ impl Default for RawSettings {
             predictive_pace_warning_enabled: s.predictive_pace_warning_enabled,
             predictive_pace_warning_lead_hours: s.predictive_pace_warning_lead_hours,
             limit_reset_notifications_enabled: s.limit_reset_notifications_enabled,
+            session_reset_warning_enabled: s.session_reset_warning_enabled,
+            session_reset_warning_lead_minutes: s.session_reset_warning_lead_minutes,
+            session_reset_warning_ntfy_topic: s.session_reset_warning_ntfy_topic.clone(),
             credential_expiry_notifications_enabled: s.credential_expiry_notifications_enabled,
             session_quota_notifications_enabled: Some(s.session_quota_notifications_enabled),
             show_pace: s.show_pace,
@@ -834,6 +840,12 @@ impl From<RawSettings> for Settings {
                 raw.predictive_pace_warning_lead_hours,
             ),
             limit_reset_notifications_enabled: raw.limit_reset_notifications_enabled,
+            session_reset_warning_enabled: raw.session_reset_warning_enabled,
+            session_reset_warning_lead_minutes:
+                crate::notifications::session_reset_warning_lead_minutes(
+                    raw.session_reset_warning_lead_minutes,
+                ),
+            session_reset_warning_ntfy_topic: raw.session_reset_warning_ntfy_topic,
             credential_expiry_notifications_enabled: raw.credential_expiry_notifications_enabled,
             session_quota_notifications_enabled: raw
                 .session_quota_notifications_enabled

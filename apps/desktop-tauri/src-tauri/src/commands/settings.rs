@@ -30,6 +30,9 @@ pub struct SettingsUpdate {
     pub predictive_pace_warning_enabled: Option<bool>,
     pub predictive_pace_warning_lead_hours: Option<u16>,
     pub limit_reset_notifications_enabled: Option<bool>,
+    pub session_reset_warning_enabled: Option<bool>,
+    pub session_reset_warning_lead_minutes: Option<u32>,
+    pub session_reset_warning_ntfy_topic: Option<String>,
     pub credential_expiry_notifications_enabled: Option<bool>,
     pub session_quota_notifications_enabled: Option<bool>,
     pub show_pace: Option<bool>,
@@ -506,6 +509,18 @@ impl SettingsUpdate {
         if let Some(v) = self.limit_reset_notifications_enabled {
             settings.limit_reset_notifications_enabled = v;
         }
+        if let Some(enabled) = self.session_reset_warning_enabled {
+            settings.session_reset_warning_enabled = enabled;
+        }
+        if let Some(minutes) = self.session_reset_warning_lead_minutes {
+            settings.session_reset_warning_lead_minutes =
+                codexbar::notifications::session_reset_warning_lead_minutes(minutes);
+        }
+        if let Some(topic) = self.session_reset_warning_ntfy_topic.as_deref() {
+            let topic = topic.trim();
+            codexbar::notifications::validate_reset_warning_topic(topic)?;
+            settings.session_reset_warning_ntfy_topic = topic.to_string();
+        }
         if let Some(v) = self.credential_expiry_notifications_enabled {
             settings.credential_expiry_notifications_enabled = v;
         }
@@ -839,6 +854,10 @@ pub async fn update_settings(
     let previous_promoted = settings.promote_tray_icon;
     let previous_language = settings.ui_language;
     let previous_limit_reset = settings.limit_reset_notifications_enabled;
+    let reset_warning_changed = patch.enabled_providers.is_some()
+        || patch.session_reset_warning_enabled.is_some()
+        || patch.session_reset_warning_lead_minutes.is_some()
+        || patch.session_reset_warning_ntfy_topic.is_some();
     let status_targets_changed =
         patch.status_checks_enabled.is_some() || patch.enabled_providers.is_some();
 
@@ -883,6 +902,9 @@ pub async fn update_settings(
         let state = app.state::<Mutex<AppState>>();
         let _ =
             crate::commands::invalidate_provider_refresh_and_prune_disabled(&state, &enabled_ids);
+    }
+    if reset_warning_changed {
+        crate::reset_warning::reconcile(&app);
     }
 
     crate::floatbar::after_settings_saved(&app, &float_bar_patch, &settings, notify_float_bar);

@@ -171,6 +171,9 @@ pub const EXCLUDED_KEYS: &[&str] = &[
     // Pinned to this machine's zone on first launch; no settings control.
     "cost_usage_bucket_time_zone",
     // Consent, autostart and other side-effect toggles.
+    "session_reset_warning_enabled",
+    "session_reset_warning_lead_minutes",
+    "session_reset_warning_ntfy_topic",
     "start_at_login",
     "start_minimized",
     "hooks_enabled",
