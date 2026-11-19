@@ -200,14 +200,16 @@ describe("useTrayPanelLayout sizing", () => {
     );
   });
 
-  it("leaves no measuring overrides behind when style feedback overlaps the first pass", async () => {
+  it("caps a dense overview at the logical work area and restores measuring overrides", async () => {
     vi.stubGlobal("ResizeObserver", StyleFeedbackResizeObserver);
     setScrollHeight(1_200);
     const html = document.documentElement;
     const body = surface.querySelector<HTMLElement>(".menu-surface__body")!;
     const stack = surface.querySelector<HTMLElement>(".menu-stack")!;
 
-    const { result } = renderHook(() => useTrayPanelLayout(hookProps()));
+    const { result } = renderHook(() =>
+      useTrayPanelLayout(hookProps({ detailMode: false, denseOverview: true })),
+    );
     await waitFor(() => expect(result.current.layoutReady).toBe(true), {
       timeout: 3000,
     });
@@ -216,10 +218,13 @@ describe("useTrayPanelLayout sizing", () => {
     });
 
     expect(feedbackObserverCallbacks).toBeGreaterThan(0);
-    expect(lastResize()).toEqual({ width: 310, height: 884 });
-    expect(surface.style.maxHeight).toBe("884px");
+    // 900 physical px at 125% scaling leaves 704 logical px with the margin.
+    expect(windowMocks.setSize.mock.calls[0][0]).toEqual({ width: 310, height: 704 });
+    expect(lastResize()).toEqual({ width: 310, height: 704 });
+    expect(surface.style.maxHeight).toBe("704px");
     expect(surface.style.minHeight).toBe("");
     expect(surface.style.height).toBe("");
+    expect(surface.style.flexShrink).toBe("");
     expect(surface.style.overflow).toBe("");
     expect(body.style.overflow).toBe("");
     expect(body.style.flex).toBe("");

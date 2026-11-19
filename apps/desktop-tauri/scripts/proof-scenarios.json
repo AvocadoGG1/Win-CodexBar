@@ -1,6 +1,16 @@
 {
   "scenarios": [
     {
+      "name": "tray-overview-scroll-bottom",
+      "query": "window=flyout&fixture=default",
+      "size": [420, 480],
+      "steps": [
+        { "expectText": ["Usage & Spend", "claude.user@example.com", "dev@example.com"] },
+        { "scrollToBottom": { "selector": ".menu-surface__body", "target": ".menu-stack__item:last-child" } },
+        { "screenshot": "tray-overview-scroll-bottom" }
+      ]
+    },
+    {
       "name": "tray-default",
       "query": "window=main&fixture=default",
       "size": [310, 1032],

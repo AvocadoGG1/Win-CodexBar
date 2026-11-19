@@ -18,6 +18,7 @@ const TRAY_OVERVIEW_MIN_HEIGHT = 200;
 const TRAY_DETAIL_MIN_HEIGHT = 420;
 const TRAY_DENSE_OVERVIEW_HEIGHT = 776;
 const TRAY_HEIGHT_SLACK = 1;
+const TRAY_WORK_AREA_MARGIN = 16;
 
 export interface TrayPanelLayoutOptions {
   canMeasure: boolean;
@@ -113,7 +114,7 @@ export function useTrayPanelLayout({
   useEffect(() => {
     if (!canMeasure) return;
 
-    const minHeight = detailMode
+    const preferredMinHeight = detailMode
       ? TRAY_DETAIL_MIN_HEIGHT
       : denseOverview
         ? TRAY_DENSE_OVERVIEW_HEIGHT
@@ -144,17 +145,19 @@ export function useTrayPanelLayout({
       const html = document.documentElement;
       const pageBody = document.body;
       const workArea = await getWorkAreaRect().catch(() => null);
-      const maxHeight = Math.max(
-        minHeight,
-        Math.min(
-          TRAY_MAX_MEASURE_HEIGHT,
-          (workArea?.height ?? TRAY_MAX_MEASURE_HEIGHT) - 16,
-        ),
+      const scaleFactor = window.devicePixelRatio;
+      const workAreaHeight = workArea
+        ? Math.floor(workArea.height / scaleFactor)
+        : TRAY_MAX_MEASURE_HEIGHT;
+      const maxHeight = Math.min(
+        TRAY_MAX_MEASURE_HEIGHT,
+        Math.max(1, workAreaHeight - TRAY_WORK_AREA_MARGIN),
       );
+      const minHeight = Math.min(preferredMinHeight, maxHeight);
       const width = fitTrayWidthToWorkArea(
         requestedWidth,
         workArea?.width ?? null,
-        window.devicePixelRatio,
+        scaleFactor,
       );
 
       const body = surface.querySelector<HTMLElement>(".menu-surface__body");
@@ -167,10 +170,12 @@ export function useTrayPanelLayout({
         bodyMinHeight: pageBody.style.minHeight,
         surfaceMinHeight: surface.style.minHeight,
         surfaceHeight: surface.style.height,
+        surfaceFlexShrink: surface.style.flexShrink,
         surfaceMaxHeight: surface.style.maxHeight,
         surfaceOverflow: surface.style.overflow,
         bodyInnerOverflow: body?.style.overflow,
         bodyFlex: body?.style.flex,
+        bodyScrollTop: body?.scrollTop ?? 0,
         stackOverflow: stack?.style.overflow,
       };
       let committedHeight = false;
@@ -180,6 +185,7 @@ export function useTrayPanelLayout({
       pageBody.style.minHeight = "0";
       surface.style.minHeight = "0";
       surface.style.height = "auto";
+      surface.style.flexShrink = "0";
       surface.style.maxHeight = "none";
       surface.style.overflow = "visible";
       if (body) {
@@ -205,12 +211,14 @@ export function useTrayPanelLayout({
         const committed = sizingStateRef.current.committed;
         if (!layoutReadyRef.current || committed?.width !== width) {
           const height =
-            layoutReadyRef.current && committed ? committed.height : minHeight;
+            layoutReadyRef.current && committed
+              ? Math.min(committed.height, maxHeight)
+              : minHeight;
           sizingStateRef.current = recordAutoFitCommit(
             sizingStateRef.current,
             width,
             height,
-            window.devicePixelRatio,
+            scaleFactor,
           );
           await applySize(new LogicalSize(width, height));
         }
@@ -251,7 +259,7 @@ export function useTrayPanelLayout({
             expectedWidth: width,
             minHeight,
             maxHeight,
-            scaleFactor: window.devicePixelRatio,
+            scaleFactor,
             zoom,
             lastAppliedPhysicalHeight: lastSizeRef.current?.height ?? null,
           },
@@ -276,6 +284,7 @@ export function useTrayPanelLayout({
         }
         surface.style.minHeight = previous.surfaceMinHeight;
         surface.style.height = previous.surfaceHeight;
+        surface.style.flexShrink = previous.surfaceFlexShrink;
         surface.style.overflow = previous.surfaceOverflow;
         html.style.overflow = previous.htmlOverflow;
         pageBody.style.overflow = previous.bodyOverflow;
@@ -283,6 +292,7 @@ export function useTrayPanelLayout({
         if (body) {
           body.style.overflow = previous.bodyInnerOverflow ?? "";
           body.style.flex = previous.bodyFlex ?? "";
+          if (previous.bodyScrollTop > 0) body.scrollTop = previous.bodyScrollTop;
         }
         if (stack) {
           stack.style.overflow = previous.stackOverflow ?? "";

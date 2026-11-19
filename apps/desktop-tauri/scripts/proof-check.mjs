@@ -22,6 +22,7 @@
 //   expectCall                  a backend command was invoked (optional args match)
 //   expectNoCall                a backend command was not invoked (waits 300 ms first)
 //   click                       mouse click on the first match (label, optional near)
+//   scrollToBottom              wheel over a container and check its final target is visible
 //   key                         key press (CDP Input.dispatchKeyEvent) at the focused
 //                               element: Escape, ArrowLeft, ArrowRight, Home, End
 //   select                      set a native <select> by label
@@ -435,6 +436,34 @@ async function runStep(page, step, ctx) {
     for (const type of ["mouseMoved", "mousePressed", "mouseReleased"]) {
       await page.send("Input.dispatchMouseEvent", { type, ...point, button: "left", clickCount: 1 });
     }
+  } else if (step.scrollToBottom !== undefined) {
+    const { selector, target } = step.scrollToBottom;
+    const measure = `(() => {
+      const el = document.querySelector(${js(selector)});
+      if (!el || el.scrollHeight <= el.clientHeight) return null;
+      const { x, y, width, height } = el.getBoundingClientRect();
+      return { x: x + width / 2, y: (y + Math.min(y + height, innerHeight)) / 2 };
+    })()`;
+    let bounds;
+    const end = Date.now() + STEP_TIMEOUT_MS;
+    do {
+      bounds = await page.eval(measure);
+      if (!bounds) await sleep(150);
+    } while (!bounds && Date.now() <= end);
+    if (!bounds) throw new Error(`no scrollable content in ${selector}`);
+    await page.send("Input.dispatchMouseEvent", {
+      type: "mouseWheel", ...bounds, deltaX: 0, deltaY: 5000,
+    });
+    const reached = await page.poll(`(() => {
+      const el = document.querySelector(${js(selector)});
+      const last = el?.querySelector(${js(target)});
+      if (!last || el.scrollTop <= 0 || el.scrollHeight - el.clientHeight - el.scrollTop > 1) return false;
+      const viewport = el.getBoundingClientRect();
+      const row = last.getBoundingClientRect();
+      return row.top >= Math.max(viewport.top, 0) - 1
+        && row.bottom <= Math.min(viewport.bottom, innerHeight) + 1;
+    })()`);
+    if (!reached) throw new Error(`${target} is still clipped at the bottom of ${selector}`);
   } else if (step.expectOrder !== undefined) {
     // Exact textContent list of the matched elements, in document order.
     const { selector, texts } = step.expectOrder;

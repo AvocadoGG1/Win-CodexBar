@@ -309,7 +309,7 @@ html:has(.menu-surface--tray) {
 }
 .menu-surface--tray .menu-surface__body {
   flex: 0 1 auto;
-  overflow-y: visible;
+  overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
   min-width: 0;
